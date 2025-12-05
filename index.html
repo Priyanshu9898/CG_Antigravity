@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battlezone - WebGL</title>
+    <meta name="description" content="A 3D tank battle game inspired by the classic Battlezone arcade game, built with WebGL">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Main Game Container -->
+    <div id="game-container">
+        <!-- WebGL Canvas -->
+        <canvas id="game-canvas"></canvas>
+        
+        <!-- Radar Overlay -->
+        <div id="radar-container">
+            <canvas id="radar-canvas"></canvas>
+            <div class="radar-overlay"></div>
+        </div>
+        
+        <!-- Crosshair -->
+        <div id="crosshair">
+            <div class="crosshair-h"></div>
+            <div class="crosshair-v"></div>
+            <div class="crosshair-center"></div>
+        </div>
+        
+        <!-- HUD -->
+        <div id="hud">
+            <div id="score-display">
+                <span class="label">SCORE</span>
+                <span id="score-value">0</span>
+            </div>
+            <div id="lives-display">
+                <span class="label">LIVES</span>
+                <span id="lives-value">3</span>
+            </div>
+            <div id="level-display">
+                <span class="label">LEVEL</span>
+                <span id="level-value">1</span>
+            </div>
+            <div id="view-mode">
+                <span id="view-label">1ST PERSON</span>
+            </div>
+        </div>
+        
+        <!-- Status Messages -->
+        <div id="status-message"></div>
+        
+        <!-- Game Messages -->
+        <div id="game-message" class="hidden">
+            <h2 id="message-title">BATTLEZONE</h2>
+            <p id="message-text">Press ENTER to Start</p>
+            <div id="controls-info">
+                <p><strong>Controls:</strong></p>
+                <p>↑/↓ - Move Forward/Backward</p>
+                <p>←/→ - Rotate Left/Right</p>
+                <p>SPACE - Fire</p>
+                <p>TAB - Toggle View</p>
+                <p>P - Pause</p>
+                <p>! - Alternate Mode</p>
+            </div>
+        </div>
+        
+        <!-- Power-up Indicators -->
+        <div id="powerup-indicators" class="hidden">
+            <div id="shield-indicator" class="powerup-icon hidden">🛡️ SHIELD</div>
+            <div id="freeze-indicator" class="powerup-icon hidden">❄️ FREEZE</div>
+            <div id="xray-indicator" class="powerup-icon hidden">👁️ X-RAY</div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="gl-matrix.js"></script>
+    <script src="src/utils.js"></script>
+    <script src="src/shaders.js"></script>
+    <script src="src/renderer.js"></script>
+    <script src="src/audio.js"></script>
+    <script src="src/collision.js"></script>
+    <script src="src/physics.js"></script>
+    <script src="src/terrain.js"></script>
+    <script src="src/projectile.js"></script>
+    <script src="src/player.js"></script>
+    <script src="src/enemy.js"></script>
+    <script src="src/powerups.js"></script>
+    <script src="src/ui.js"></script>
+    <script src="src/game.js"></script>
+    <script src="src/main.js"></script>
+</body>
+</html>

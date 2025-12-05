@@ -1,0 +1,335 @@
+/* Battlezone - Main Styles */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #000;
+    overflow: hidden;
+    font-family: 'Courier New', monospace;
+    color: #00ff00;
+}
+
+/* Game Container */
+#game-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+}
+
+/* Main Canvas */
+#game-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Radar */
+#radar-container {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 180px;
+    height: 180px;
+    border: 2px solid #00ff00;
+    border-radius: 50%;
+    overflow: hidden;
+    background: rgba(0, 20, 0, 0.8);
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+}
+
+#radar-canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.radar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    pointer-events: none;
+    background: radial-gradient(circle at center, transparent 0%, rgba(0, 255, 0, 0.05) 100%);
+}
+
+/* Crosshair */
+#crosshair {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.crosshair-h {
+    position: absolute;
+    width: 40px;
+    height: 2px;
+    background: #00ff00;
+    left: -50px;
+    top: -1px;
+    box-shadow: 0 0 5px #00ff00;
+}
+
+.crosshair-h::after {
+    content: '';
+    position: absolute;
+    width: 40px;
+    height: 2px;
+    background: #00ff00;
+    left: 60px;
+    box-shadow: 0 0 5px #00ff00;
+}
+
+.crosshair-v {
+    position: absolute;
+    width: 2px;
+    height: 40px;
+    background: #00ff00;
+    left: -1px;
+    top: -50px;
+    box-shadow: 0 0 5px #00ff00;
+}
+
+.crosshair-v::after {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 40px;
+    background: #00ff00;
+    top: 60px;
+    box-shadow: 0 0 5px #00ff00;
+}
+
+.crosshair-center {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border: 2px solid #00ff00;
+    border-radius: 50%;
+    left: -3px;
+    top: -3px;
+    box-shadow: 0 0 5px #00ff00;
+}
+
+/* HUD */
+#hud {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 18px;
+    text-shadow: 0 0 10px #00ff00;
+}
+
+#hud>div {
+    background: rgba(0, 20, 0, 0.7);
+    padding: 10px 20px;
+    border: 1px solid #00ff00;
+}
+
+.label {
+    opacity: 0.7;
+    margin-right: 10px;
+}
+
+#view-mode {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(0, 20, 0, 0.7);
+    padding: 10px 20px;
+    border: 1px solid #00ff00;
+}
+
+/* Status Message */
+#status-message {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 24px;
+    text-shadow: 0 0 15px #00ff00;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+#status-message.visible {
+    opacity: 1;
+}
+
+/* Game Message Overlay */
+#game-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    background: rgba(0, 20, 0, 0.9);
+    padding: 40px 60px;
+    border: 2px solid #00ff00;
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+}
+
+#game-message h2 {
+    font-size: 48px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 20px #00ff00;
+    letter-spacing: 8px;
+}
+
+#game-message p {
+    font-size: 18px;
+    margin: 10px 0;
+}
+
+#controls-info {
+    margin-top: 30px;
+    text-align: left;
+    opacity: 0.8;
+}
+
+#controls-info p {
+    font-size: 14px;
+    margin: 5px 0;
+}
+
+/* Power-up Indicators */
+#powerup-indicators {
+    position: absolute;
+    top: 100px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.powerup-icon {
+    background: rgba(0, 20, 0, 0.8);
+    padding: 8px 15px;
+    border: 1px solid #00ff00;
+    font-size: 14px;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
+/* Hide HUD elements when menu/message is visible */
+#game-message:not(.hidden)~#hud,
+#game-message:not(.hidden)~#radar-container,
+#game-message:not(.hidden)~#crosshair,
+#game-message:not(.hidden)~#view-mode,
+#game-container:has(#game-message:not(.hidden)) #hud,
+#game-container:has(#game-message:not(.hidden)) #radar-container,
+#game-container:has(#game-message:not(.hidden)) #crosshair,
+#game-container:has(#game-message:not(.hidden)) #view-mode {
+    display: none !important;
+}
+
+/* Scanline Effect (optional retro look) */
+#game-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(0deg,
+            rgba(0, 0, 0, 0.1) 0px,
+            rgba(0, 0, 0, 0.1) 1px,
+            transparent 1px,
+            transparent 3px);
+    pointer-events: none;
+    opacity: 0.3;
+}
+
+/* Realistic Mode Overrides */
+.realistic-mode #game-container::after {
+    display: none;
+}
+
+.realistic-mode #hud>div,
+.realistic-mode #view-mode,
+.realistic-mode #radar-container {
+    background: rgba(20, 30, 20, 0.85);
+    border-color: #4a5;
+    color: #8f8;
+}
+
+.realistic-mode .crosshair-h,
+.realistic-mode .crosshair-h::after,
+.realistic-mode .crosshair-v,
+.realistic-mode .crosshair-v::after {
+    background: rgba(255, 50, 50, 0.9);
+    box-shadow: 0 0 3px rgba(255, 50, 50, 0.5);
+}
+
+.realistic-mode .crosshair-center {
+    border-color: rgba(255, 50, 50, 0.9);
+    box-shadow: 0 0 3px rgba(255, 50, 50, 0.5);
+}
+
+/* Alternate Mode (!) - Desert Storm Theme */
+.alternate-mode {
+    background: #1a1510 !important;
+}
+
+.alternate-mode #hud>div,
+.alternate-mode #view-mode {
+    background: rgba(40, 30, 20, 0.85);
+    border-color: #c90;
+    color: #fa0;
+}
+
+.alternate-mode #radar-container {
+    border-color: #c90;
+    background: rgba(40, 30, 15, 0.8);
+}
+
+.alternate-mode .crosshair-h,
+.alternate-mode .crosshair-h::after,
+.alternate-mode .crosshair-v,
+.alternate-mode .crosshair-v::after,
+.alternate-mode .crosshair-center {
+    background: #f90;
+    border-color: #f90;
+    box-shadow: 0 0 5px #f90;
+}
+
+.alternate-mode #game-message {
+    background: rgba(40, 30, 20, 0.9);
+    border-color: #c90;
+}
+
+.alternate-mode #status-message {
+    color: #fa0;
+    text-shadow: 0 0 15px #f90;
+}
