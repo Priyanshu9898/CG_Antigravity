@@ -22,7 +22,7 @@
 
         // Create game instance
         game = new Game({
-            use3DGameplay: false,   // DISABLED: Fixed flying tanks issue
+            use3DGameplay: true,   // ENABLED: Terrain elevation active
             useBallistics: false,  // Use straight-line projectiles per requirements
             enableSecondPlayer: false  // Set to true for second player
         });

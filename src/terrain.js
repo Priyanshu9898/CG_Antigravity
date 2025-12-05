@@ -22,12 +22,12 @@ class Terrain {
     }
 
     generate() {
-        this.generateMountains();
-        this.generateObstacles();
-
         if (this.use3DGameplay) {
             this.generateHeightMap();
         }
+
+        this.generateMountains();
+        this.generateObstacles();
     }
 
     generateMountains() {
@@ -42,12 +42,16 @@ class Terrain {
             const variance = Utils.random(-15, 15);
             const distance = edgeDistance + variance;
 
+            const x = Math.cos(angle) * distance;
+            const z = Math.sin(angle) * distance;
+            let y = 0;
+
+            if (this.use3DGameplay && this.heightMap) {
+                y = this.getHeightAt(x, z);
+            }
+
             this.mountains.push({
-                position: [
-                    Math.cos(angle) * distance,
-                    0,
-                    Math.sin(angle) * distance
-                ],
+                position: [x, y, z],
                 scale: Utils.random(0.8, 1.5),
                 rotation: Utils.random(0, Math.PI * 2),
                 color: [0.3, 0.35, 0.25] // Earthy mountain color
@@ -74,6 +78,11 @@ class Terrain {
                 ];
                 attempts++;
             } while (this.checkObstacleOverlap(position, 8) && attempts < 20);
+
+            // Apply terrain height if enabled
+            if (this.use3DGameplay && this.heightMap) {
+                position[1] = this.getHeightAt(position[0], position[2]);
+            }
 
             const type = Math.random() > 0.5 ? 'cube' : 'pyramid';
             const baseSize = Utils.random(3, 6);

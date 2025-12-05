@@ -40,7 +40,9 @@ class PhysicsEngine {
 
     // Apply tank-like movement with acceleration/deceleration
     updateTankMovement(tank, input, deltaTime, config = {}) {
-        const maxSpeed = config.maxSpeed || 15;
+        // Apply speed multiplier from power-ups
+        const speedMultiplier = tank.speedMultiplier || 1.0;
+        const maxSpeed = (config.maxSpeed || 15) * speedMultiplier;
         const acceleration = config.acceleration || 25;
         const deceleration = config.deceleration || 20;
         const turnSpeed = config.turnSpeed || 2.0;

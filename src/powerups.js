@@ -3,7 +3,8 @@
 const PowerUpType = {
     SHIELD: 'shield',
     FREEZE: 'freeze',
-    XRAY: 'xray'
+    XRAY: 'xray',
+    SPEED: 'speed'
 };
 
 class PowerUp {
@@ -30,6 +31,7 @@ class PowerUp {
             case PowerUpType.SHIELD: return [0.2, 0.5, 1.0]; // Blue
             case PowerUpType.FREEZE: return [0.5, 0.9, 1.0]; // Cyan
             case PowerUpType.XRAY: return [0.8, 0.2, 0.8]; // Purple
+            case PowerUpType.SPEED: return [1.0, 0.7, 0.2]; // Orange/Yellow
             default: return [1, 1, 1];
         }
     }
@@ -39,6 +41,7 @@ class PowerUp {
             case PowerUpType.SHIELD: return 10;
             case PowerUpType.FREEZE: return 5;
             case PowerUpType.XRAY: return 15;
+            case PowerUpType.SPEED: return 8;
             default: return 10;
         }
     }
@@ -135,6 +138,11 @@ class PowerUpManager {
 
             powerup.update(deltaTime);
 
+            // Apply terrain height
+            if (terrain && terrain.use3DGameplay) {
+                powerup.position[1] = terrain.getHeightAt(powerup.position[0], powerup.position[2]);
+            }
+
             if (powerup.checkCollection(player)) {
                 this.activate(powerup.type, powerup.duration);
                 collectedPowerups.push(powerup);
@@ -180,6 +188,13 @@ class PowerUpManager {
             player.invulnerabilityTime = this.activePowerups[PowerUpType.SHIELD];
         }
 
+        // Speed effect - player moves faster
+        if (this.isActive(PowerUpType.SPEED)) {
+            player.speedMultiplier = 1.5;
+        } else {
+            player.speedMultiplier = 1.0;
+        }
+
         // Freeze effect - enemies don't move
         // This is handled in the enemy update loop by checking this.isActive(PowerUpType.FREEZE)
     }
@@ -190,6 +205,10 @@ class PowerUpManager {
 
     isXRayActive() {
         return this.isActive(PowerUpType.XRAY);
+    }
+
+    isSpeedActive() {
+        return this.isActive(PowerUpType.SPEED);
     }
 
     clear() {

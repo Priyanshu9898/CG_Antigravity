@@ -36,6 +36,11 @@ class Renderer {
         this.programs.particle = this.createProgram(Shaders.particleVertex, Shaders.particleFragment);
         this.programs.textured = this.createProgram(Shaders.texturedVertex, Shaders.texturedFragment);
 
+        console.log('Sky Vertex Shader:', Shaders.skyVertex ? 'Defined' : 'Undefined');
+        console.log('Sky Fragment Shader:', Shaders.skyFragment ? 'Defined' : 'Undefined');
+
+        this.programs.sky = this.createProgram(Shaders.skyVertex, Shaders.skyFragment);
+
         // Load power-up textures
         this.textures = {};
         this.loadTexture('shield', 'assets/shield.png');
@@ -211,77 +216,116 @@ class Renderer {
         const indices = [];
         let indexOffset = 0;
 
-        // Tank body (box)
-        const bodyWidth = 2.0;
-        const bodyHeight = 1.0;
-        const bodyLength = 3.0;
-
         // Helper to add a box
         const addBox = (cx, cy, cz, w, h, l) => {
-            const hw = w / 2, hh = h / 2, hl = l / 2;
-            const baseIdx = positions.length / 3;
+            const hw = w / 2;
+            const hh = h / 2;
+            const hl = l / 2;
 
-            // 8 vertices
-            const verts = [
-                cx - hw, cy - hh, cz + hl,  // 0: front-bottom-left
-                cx + hw, cy - hh, cz + hl,  // 1: front-bottom-right
-                cx + hw, cy + hh, cz + hl,  // 2: front-top-right
-                cx - hw, cy + hh, cz + hl,  // 3: front-top-left
-                cx - hw, cy - hh, cz - hl,  // 4: back-bottom-left
-                cx + hw, cy - hh, cz - hl,  // 5: back-bottom-right
-                cx + hw, cy + hh, cz - hl,  // 6: back-top-right
-                cx - hw, cy + hh, cz - hl   // 7: back-top-left
+            // Vertices
+            const v = [
+                // Front
+                cx - hw, cy - hh, cz + hl,
+                cx + hw, cy - hh, cz + hl,
+                cx + hw, cy + hh, cz + hl,
+                cx - hw, cy + hh, cz + hl,
+                // Back
+                cx - hw, cy - hh, cz - hl,
+                cx - hw, cy + hh, cz - hl,
+                cx + hw, cy + hh, cz - hl,
+                cx + hw, cy - hh, cz - hl,
+                // Top
+                cx - hw, cy + hh, cz - hl,
+                cx - hw, cy + hh, cz + hl,
+                cx + hw, cy + hh, cz + hl,
+                cx + hw, cy + hh, cz - hl,
+                // Bottom
+                cx - hw, cy - hh, cz - hl,
+                cx + hw, cy - hh, cz - hl,
+                cx + hw, cy - hh, cz + hl,
+                cx - hw, cy - hh, cz + hl,
+                // Right
+                cx + hw, cy - hh, cz - hl,
+                cx + hw, cy + hh, cz - hl,
+                cx + hw, cy + hh, cz + hl,
+                cx + hw, cy - hh, cz + hl,
+                // Left
+                cx - hw, cy - hh, cz - hl,
+                cx - hw, cy - hh, cz + hl,
+                cx - hw, cy + hh, cz + hl,
+                cx - hw, cy + hh, cz - hl
             ];
 
-            // Add faces with proper normals
-            // Front
-            positions.push(...verts.slice(0, 3), ...verts.slice(3, 6), ...verts.slice(6, 9), ...verts.slice(9, 12));
-            normals.push(0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1);
-            indices.push(baseIdx, baseIdx + 1, baseIdx + 2, baseIdx, baseIdx + 2, baseIdx + 3);
+            // Normals
+            const n = [
+                // Front
+                0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
+                // Back
+                0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1,
+                // Top
+                0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,
+                // Bottom
+                0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0,
+                // Right
+                1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
+                // Left
+                -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0
+            ];
 
-            // Back
-            const backBase = positions.length / 3;
-            positions.push(...verts.slice(15, 18), ...verts.slice(12, 15), ...verts.slice(21, 24), ...verts.slice(18, 21));
-            normals.push(0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1);
-            indices.push(backBase, backBase + 1, backBase + 2, backBase, backBase + 2, backBase + 3);
+            // Indices
+            const i = [
+                0, 1, 2, 0, 2, 3,    // Front
+                4, 5, 6, 4, 6, 7,    // Back
+                8, 9, 10, 8, 10, 11,  // Top
+                12, 13, 14, 12, 14, 15,  // Bottom
+                16, 17, 18, 16, 18, 19,  // Right
+                20, 21, 22, 20, 22, 23   // Left
+            ];
 
-            // Top
-            const topBase = positions.length / 3;
-            positions.push(...verts.slice(9, 12), ...verts.slice(6, 9), ...verts.slice(18, 21), ...verts.slice(21, 24));
-            normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0);
-            indices.push(topBase, topBase + 1, topBase + 2, topBase, topBase + 2, topBase + 3);
-
-            // Bottom
-            const bottomBase = positions.length / 3;
-            positions.push(...verts.slice(12, 15), ...verts.slice(15, 18), ...verts.slice(3, 6), ...verts.slice(0, 3));
-            normals.push(0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0);
-            indices.push(bottomBase, bottomBase + 1, bottomBase + 2, bottomBase, bottomBase + 2, bottomBase + 3);
-
-            // Right
-            const rightBase = positions.length / 3;
-            positions.push(...verts.slice(3, 6), ...verts.slice(15, 18), ...verts.slice(18, 21), ...verts.slice(6, 9));
-            normals.push(1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0);
-            indices.push(rightBase, rightBase + 1, rightBase + 2, rightBase, rightBase + 2, rightBase + 3);
-
-            // Left
-            const leftBase = positions.length / 3;
-            positions.push(...verts.slice(12, 15), ...verts.slice(0, 3), ...verts.slice(9, 12), ...verts.slice(21, 24));
-            normals.push(-1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0);
-            indices.push(leftBase, leftBase + 1, leftBase + 2, leftBase, leftBase + 2, leftBase + 3);
+            positions.push(...v);
+            normals.push(...n);
+            for (let idx of i) {
+                indices.push(indexOffset + idx);
+            }
+            indexOffset += 24;
         };
 
-        // Main body
-        addBox(0, 0.5, 0, bodyWidth, bodyHeight, bodyLength);
+        // Lower Chassis (Main Body)
+        addBox(0, 0.6, 0, 2.2, 0.8, 3.8);
 
-        // Turret
-        addBox(0, 1.2, -0.2, 1.2, 0.6, 1.5);
+        // Upper Chassis (Sloped look approximated with smaller box)
+        addBox(0, 1.2, -0.2, 1.8, 0.4, 2.8);
 
-        // Cannon
-        addBox(0, 1.2, 1.5, 0.25, 0.25, 2.0);
+        // Turret Base
+        addBox(0, 1.6, -0.4, 1.4, 0.6, 1.6);
 
-        // Tracks (left and right)
-        addBox(-1.1, 0.3, 0, 0.4, 0.6, 3.2);
-        addBox(1.1, 0.3, 0, 0.4, 0.6, 3.2);
+        // Turret Front (Mantlet)
+        addBox(0, 1.6, 0.6, 0.8, 0.4, 0.6);
+
+        // Cannon Barrel
+        addBox(0, 1.6, 2.0, 0.2, 0.2, 3.0);
+
+        // Muzzle Brake
+        addBox(0, 1.6, 3.6, 0.3, 0.3, 0.4);
+
+        // Commander's Hatch
+        addBox(0.4, 1.95, -0.6, 0.5, 0.1, 0.5);
+
+        // Antenna
+        addBox(-0.5, 2.2, -0.8, 0.05, 1.2, 0.05);
+
+        // Tracks (Left)
+        addBox(-1.3, 0.4, 0, 0.5, 0.8, 4.0); // Main track block
+        addBox(-1.3, 0.4, 1.5, 0.6, 0.6, 0.6); // Front wheel bulge
+        addBox(-1.3, 0.4, -1.5, 0.6, 0.6, 0.6); // Rear wheel bulge
+
+        // Tracks (Right)
+        addBox(1.3, 0.4, 0, 0.5, 0.8, 4.0); // Main track block
+        addBox(1.3, 0.4, 1.5, 0.6, 0.6, 0.6); // Front wheel bulge
+        addBox(1.3, 0.4, -1.5, 0.6, 0.6, 0.6); // Rear wheel bulge
+
+        // Engine Vents (Back)
+        addBox(0, 1.0, -1.8, 1.4, 0.1, 0.4);
 
         return this.createBufferedGeometry(positions, normals, indices);
     }
@@ -333,7 +377,12 @@ class Renderer {
         return this.createBufferedGeometry(positions, normals, indices);
     }
 
-    createGroundGeometry(width, depth, divisions) {
+    setTerrain(terrain) {
+        // Re-create ground geometry with terrain height
+        this.geometries.ground = this.createGroundGeometry(200, 200, 64, terrain);
+    }
+
+    createGroundGeometry(width, depth, divisions, terrain = null) {
         const positions = [];
         const normals = [];
         const texCoords = [];
@@ -350,8 +399,16 @@ class Renderer {
                 const px = -halfW + x * stepW;
                 const pz = -halfD + z * stepD;
 
-                positions.push(px, 0, pz);
-                normals.push(0, 1, 0);
+                let py = 0;
+                let ny = [0, 1, 0];
+
+                if (terrain && terrain.use3DGameplay) {
+                    py = terrain.getHeightAt(px, pz);
+                    ny = terrain.getNormalAt(px, pz);
+                }
+
+                positions.push(px, py, pz);
+                normals.push(ny[0], ny[1], ny[2]);
                 texCoords.push(x / divisions, z / divisions);
             }
         }
@@ -592,10 +649,16 @@ class Renderer {
             }
         }
 
-        return this.createBufferedGeometry(positions, normals, indices, texCoords);
+        // Create colors (white)
+        const colors = [];
+        for (let i = 0; i < positions.length / 3; i++) {
+            colors.push(1, 1, 1);
+        }
+
+        return this.createBufferedGeometry(positions, normals, indices, texCoords, colors);
     }
 
-    createBufferedGeometry(positions, normals, indices, texCoords = null) {
+    createBufferedGeometry(positions, normals, indices, texCoords = null, colors = null) {
         const gl = this.gl;
 
         const geometry = {
@@ -622,6 +685,13 @@ class Renderer {
             geometry.texCoordBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, geometry.texCoordBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.STATIC_DRAW);
+        }
+
+        // Color buffer (optional)
+        if (colors) {
+            geometry.colorBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, geometry.colorBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
         }
 
         return geometry;
@@ -682,6 +752,9 @@ class Renderer {
     drawGeometry(geometry, modelMatrix, uniforms = {}) {
         const gl = this.gl;
         const program = this.currentProgram;
+
+        // Clean up attributes
+        this.disableAllAttributes();
 
         // Set model matrix
         uniforms.uModelMatrix = modelMatrix;
@@ -770,7 +843,122 @@ class Renderer {
 
         // Draw
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, geometry.indexBuffer);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, geometry.indexBuffer);
         gl.drawElements(gl.TRIANGLES, geometry.vertexCount, gl.UNSIGNED_SHORT, 0);
+    }
+
+    disableAllAttributes() {
+        const gl = this.gl;
+        const maxAttribs = gl.getParameter(gl.MAX_VERTEX_ATTRIBS);
+        for (let i = 0; i < maxAttribs; i++) {
+            gl.disableVertexAttribArray(i);
+        }
+    }
+
+    drawTexturedGeometry(geometry, modelMatrix, textureName, uniforms = {}) {
+        const gl = this.gl;
+        const program = this.programs.textured;
+
+        this.useProgram(program);
+
+        // Clean up attributes from previous calls
+        this.disableAllAttributes();
+
+        // Debug logging (once)
+        if (!window.debugLogged) {
+            console.log('DrawTexturedGeometry Debug:');
+            console.log('Program Attributes:', program.attributes);
+            console.log('Geometry:', geometry);
+            console.log('Texture Name:', textureName);
+            window.debugLogged = true;
+        }
+
+        // Bind texture
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this.textures[textureName]);
+
+        // Set uniforms
+        const allUniforms = {
+            uModelMatrix: modelMatrix,
+            uViewMatrix: uniforms.uViewMatrix,
+            uProjectionMatrix: uniforms.uProjectionMatrix,
+            uNormalMatrix: uniforms.uNormalMatrix || mat4.create(),
+            uTexture: 0,
+            uColor: uniforms.uColor || [1, 1, 1],
+            uLightDirection: uniforms.uLightDirection || [0.5, 0.8, 0.3],
+            uTime: performance.now() / 1000,
+            uGlow: uniforms.uGlow || 0.0
+        };
+
+        // Calculate normal matrix if not provided
+        if (!uniforms.uNormalMatrix) {
+            const normalMatrix = mat4.create();
+            mat4.invert(normalMatrix, modelMatrix);
+            mat4.transpose(normalMatrix, normalMatrix);
+            allUniforms.uNormalMatrix = normalMatrix;
+        }
+
+        this.setUniforms(allUniforms);
+
+        // Bind position buffer
+        if (program.attributes.aPosition !== undefined) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, geometry.positionBuffer);
+            gl.enableVertexAttribArray(program.attributes.aPosition);
+            gl.vertexAttribPointer(program.attributes.aPosition, 3, gl.FLOAT, false, 0, 0);
+        }
+
+        // Bind normal buffer
+        if (program.attributes.aNormal !== undefined) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, geometry.normalBuffer);
+            gl.enableVertexAttribArray(program.attributes.aNormal);
+            gl.vertexAttribPointer(program.attributes.aNormal, 3, gl.FLOAT, false, 0, 0);
+        }
+
+        // Bind texture coordinate buffer
+        if (program.attributes.aTexCoord !== undefined && geometry.texCoordBuffer) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, geometry.texCoordBuffer);
+            gl.enableVertexAttribArray(program.attributes.aTexCoord);
+            gl.vertexAttribPointer(program.attributes.aTexCoord, 2, gl.FLOAT, false, 0, 0);
+        }
+
+        // Draw
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, geometry.indexBuffer);
+        gl.drawElements(gl.TRIANGLES, geometry.vertexCount, gl.UNSIGNED_SHORT, 0);
+    }
+
+    drawSkybox(viewMatrix, projectionMatrix) {
+        const gl = this.gl;
+        this.useProgram(this.programs.sky);
+
+        // Clean up attributes
+        this.disableAllAttributes();
+
+        // Disable culling so we see inside of cube
+        gl.disable(gl.CULL_FACE);
+        // Change depth function to LEQUAL to allow drawing at far plane
+        gl.depthFunc(gl.LEQUAL);
+
+        this.setUniforms({
+            uViewMatrix: viewMatrix,
+            uProjectionMatrix: projectionMatrix
+        });
+
+        // Use cube geometry
+        const geometry = this.geometries.cube;
+
+        // Bind attributes
+        gl.bindBuffer(gl.ARRAY_BUFFER, geometry.vertexBuffer);
+        const positionLoc = this.programs.sky.attributes.aPosition;
+        gl.enableVertexAttribArray(positionLoc);
+        gl.vertexAttribPointer(positionLoc, 3, gl.FLOAT, false, 0, 0);
+
+        // Draw
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, geometry.indexBuffer);
+        gl.drawElements(gl.TRIANGLES, geometry.numElements, gl.UNSIGNED_SHORT, 0);
+
+        // Restore state
+        gl.enable(gl.CULL_FACE);
+        gl.depthFunc(gl.LESS);
     }
 
     drawLines(positions, color, modelMatrix) {

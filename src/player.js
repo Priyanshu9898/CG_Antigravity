@@ -15,6 +15,7 @@ class Player {
         this.deceleration = 20;
         this.turnSpeed = 2.0;
         this.currentSpeed = 0;
+        this.speedMultiplier = 1.0; // Added for speed powerup
 
         // Turret for 3D gameplay
         this.turretPitch = 0; // Up/down angle
@@ -68,10 +69,10 @@ class Player {
 
         // Update movement with physics
         physics.updateTankMovement(this, this.input, deltaTime, {
-            maxSpeed: this.maxSpeed,
-            acceleration: this.acceleration,
+            maxSpeed: this.maxSpeed * (this.speedMultiplier || 1.0),
+            acceleration: this.acceleration * (this.speedMultiplier || 1.0),
             deceleration: this.deceleration,
-            turnSpeed: this.turnSpeed
+            turnSpeed: this.turnSpeed * (this.speedMultiplier ? 1.2 : 1.0) // Turn faster too
         });
 
         // Update turret pitch for 3D gameplay

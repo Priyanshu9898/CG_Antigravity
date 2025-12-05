@@ -333,6 +333,7 @@ body {
     color: #fa0;
     text-shadow: 0 0 15px #f90;
 }
+
 /* Difficulty Selection */
 #difficulty-select {
     display: flex;
@@ -417,3 +418,40 @@ body {
     border-color: #aa00ff;
 }
 
+#speed-indicator {
+    color: #ffaa00;
+    border-color: #ffaa00;
+}
+
+/* 2-Player Mode Toggle */
+#player-mode-toggle {
+    margin: 15px 0;
+}
+
+.mode-btn {
+    background: rgba(0, 40, 0, 0.9);
+    border: 2px solid #00aaff;
+    color: #00aaff;
+    padding: 10px 25px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-shadow: 0 0 5px #00aaff;
+}
+
+.mode-btn:hover {
+    background: #00aaff;
+    color: #000;
+    box-shadow: 0 0 20px rgba(0, 170, 255, 0.5);
+}
+
+.mode-btn.active {
+    background: #00aaff;
+    color: #000;
+    box-shadow: 0 0 15px rgba(0, 170, 255, 0.5);
+}
+
+#p2-controls {
+    color: #00aaff;
+}

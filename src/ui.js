@@ -16,6 +16,7 @@ class UI {
         this.shieldIndicator = document.getElementById('shield-indicator');
         this.freezeIndicator = document.getElementById('freeze-indicator');
         this.xrayIndicator = document.getElementById('xray-indicator');
+        this.speedIndicator = document.getElementById('speed-indicator');
 
         // Radar canvas
         this.radarCanvas = document.getElementById('radar-canvas');
@@ -116,6 +117,15 @@ class UI {
             if (xrayTime > 0) {
                 const span = this.xrayIndicator.querySelector('span');
                 if (span) span.textContent = `RADAR (${Math.ceil(xrayTime)}s)`;
+            }
+        }
+
+        if (this.speedIndicator) {
+            const speedTime = powerupManager.getRemainingTime(PowerUpType.SPEED);
+            this.speedIndicator.classList.toggle('hidden', speedTime <= 0);
+            if (speedTime > 0) {
+                const span = this.speedIndicator.querySelector('span');
+                if (span) span.textContent = `SPEED (${Math.ceil(speedTime)}s)`;
             }
         }
     }

@@ -153,13 +153,27 @@ class ProjectileManager {
 
     fireFromEntity(entity, config = {}) {
         // Calculate spawn position in front of entity
-        const forward = Utils.angleToVector(entity.rotation);
+        // Use entity's getShootDirection if available to account for pitch
+        let forward;
+        if (entity.getShootDirection) {
+            forward = entity.getShootDirection();
+        } else {
+            forward = Utils.angleToVector(entity.rotation);
+        }
+
         const spawnOffset = config.spawnOffset || 2.5;
+        // Height is relative to entity position, but if entity is pitched, this needs adjustment
+        // For now, we'll trust the entity position includes terrain height
         const height = config.height || 1.2;
+
+        // Calculate spawn position
+        // Ensure it's not too low (at least 1.0 above entity base)
+        let spawnY = entity.position[1] + height + (forward[1] * spawnOffset);
+        spawnY = Math.max(entity.position[1] + 1.0, spawnY);
 
         const position = [
             entity.position[0] + forward[0] * spawnOffset,
-            entity.position[1] + height,
+            spawnY,
             entity.position[2] + forward[2] * spawnOffset
         ];
 

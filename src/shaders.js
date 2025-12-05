@@ -214,6 +214,54 @@ const Shaders = {
         }
     `,
 
+    // Sky shader
+    skyVertex: `
+        attribute vec3 aPosition;
+        
+        uniform mat4 uViewMatrix;
+        uniform mat4 uProjectionMatrix;
+        
+        varying vec3 vPosition;
+        
+        void main() {
+            vPosition = aPosition;
+            // Remove translation from view matrix to keep skybox centered on camera
+            mat4 view = uViewMatrix;
+            view[3][0] = 0.0;
+            view[3][1] = 0.0;
+            view[3][2] = 0.0;
+            
+            gl_Position = uProjectionMatrix * view * vec4(aPosition, 1.0);
+            // Force depth to max to render behind everything
+            gl_Position.z = gl_Position.w;
+        }
+    `,
+
+    skyFragment: `
+        precision mediump float;
+        
+        varying vec3 vPosition;
+        
+        void main() {
+            vec3 dir = normalize(vPosition);
+            
+            // Gradient based on Y direction
+            // Dark blue at top, lighter near horizon, dark ground at bottom
+            vec3 topColor = vec3(0.0, 0.05, 0.2);
+            vec3 horizonColor = vec3(0.1, 0.2, 0.4);
+            vec3 bottomColor = vec3(0.05, 0.05, 0.1);
+            
+            vec3 color;
+            if (dir.y > 0.0) {
+                color = mix(horizonColor, topColor, pow(dir.y, 0.5));
+            } else {
+                color = mix(horizonColor, bottomColor, -dir.y);
+            }
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `,
+
     // Radar shader (2D orthographic)
     radarVertex: `
         attribute vec2 aPosition;

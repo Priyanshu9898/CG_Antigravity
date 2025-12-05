@@ -45,7 +45,7 @@
             </div>
         </div>
 
-        <!-- View Mode Indicator (bottom left, separate from HUD) -->
+        <!-- View Mode Indicator -->
         <div id="view-mode">
             <span id="view-label">1ST PERSON</span>
         </div>
@@ -65,13 +65,15 @@
                 <button class="difficulty-btn" data-difficulty="hard">HARD</button>
             </div>
 
+            <!-- 2-Player Mode Toggle -->
+            <div id="player-mode-toggle">
+                <button id="toggle-2player" class="mode-btn">2 PLAYER: OFF</button>
+            </div>
+
             <div id="controls-info">
-                <p><strong>Controls:</strong></p>
-                <p>UP/DOWN - Move Forward/Backward</p>
-                <p>LEFT/RIGHT - Rotate Left/Right</p>
-                <p>W/S - Aim Turret Up/Down (for UFO)</p>
-                <p>SPACE - Fire | E - Guided Missile</p>
-                <p>TAB - Toggle View | P - Pause</p>
+                <p><strong>Player 1:</strong> Arrows - Move | W/S - Aim | SPACE - Fire | E - Missile</p>
+                <p id="p2-controls" class="hidden"><strong>Player 2:</strong> WASD - Move | G - Fire | T - Missile</p>
+                <p>TAB - Toggle View | P - Pause | ! - Desert Mode</p>
             </div>
         </div>
 
@@ -88,6 +90,10 @@
             <div id="xray-indicator" class="powerup-icon hidden">
                 <img src="assets/xray.png" alt="Radar" class="powerup-img">
                 <span>RADAR</span>
+            </div>
+            <div id="speed-indicator" class="powerup-icon hidden">
+                <img src="assets/speed.png" alt="Speed" class="powerup-img">
+                <span>SPEED</span>
             </div>
         </div>
     </div>

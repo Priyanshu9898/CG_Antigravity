@@ -225,20 +225,34 @@ class EnemyTank {
     }
 
     getShootDirection(player) {
-        // Aim directly at player (enemies are accurate!)
+        if (!player) return Utils.angleToVector(this.rotation);
+
+        // Aim at player
         const dir = [
             player.position[0] - this.position[0],
-            1 - this.position[1], // Aim at player center
+            player.position[1] - this.position[1] + 0.5, // Aim slightly up at player center
             player.position[2] - this.position[2]
         ];
 
         const len = Math.sqrt(dir[0] * dir[0] + dir[1] * dir[1] + dir[2] * dir[2]);
+        if (len > 0) {
+            // Normalize
+            const normDir = [dir[0] / len, dir[1] / len, dir[2] / len];
 
-        return [
-            dir[0] / len,
-            dir[1] / len,
-            dir[2] / len
-        ];
+            // Limit downward angle to prevent shooting self/ground immediately
+            // If aiming too steeply down (y < -0.3), flatten it a bit
+            if (normDir[1] < -0.3) {
+                normDir[1] = -0.3;
+                // Re-normalize roughly
+                const newLen = Math.sqrt(normDir[0] * normDir[0] + normDir[1] * normDir[1] + normDir[2] * normDir[2]);
+                normDir[0] /= newLen;
+                normDir[1] /= newLen;
+                normDir[2] /= newLen;
+            }
+            return normDir;
+        }
+
+        return Utils.angleToVector(this.rotation);
     }
 
     takeDamage() {

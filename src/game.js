@@ -94,6 +94,11 @@ class Game {
             maxElevation: 5
         });
 
+        // Update renderer with terrain for 3D ground
+        if (this.config.use3DGameplay) {
+            this.renderer.setTerrain(this.terrain);
+        }
+
         // Initialize player
         this.player = new Player({
             position: [0, 0, 0]
@@ -153,6 +158,22 @@ class Game {
                 this.startGame();
             });
         });
+
+        // 2-Player toggle button handler
+        const toggle2PlayerBtn = document.getElementById('toggle-2player');
+        if (toggle2PlayerBtn) {
+            toggle2PlayerBtn.addEventListener('click', () => {
+                this.config.enableSecondPlayer = !this.config.enableSecondPlayer;
+                toggle2PlayerBtn.textContent = this.config.enableSecondPlayer ? '2 PLAYER: ON' : '2 PLAYER: OFF';
+                toggle2PlayerBtn.classList.toggle('active', this.config.enableSecondPlayer);
+
+                // Show/hide Player 2 controls info
+                const p2Controls = document.getElementById('p2-controls');
+                if (p2Controls) {
+                    p2Controls.classList.toggle('hidden', !this.config.enableSecondPlayer);
+                }
+            });
+        }
     }
 
     handleKeyDown(e) {
@@ -235,6 +256,12 @@ class Game {
                 case 'KeyG':
                     if (this.player2) {
                         this.playerShoot(this.player2);
+                    }
+                    break;
+                case 'KeyT':
+                    // Player 2 guided missile
+                    if (this.player2) {
+                        this.playerShootGuided(this.player2);
                     }
                     break;
                 case 'Tab':
@@ -421,8 +448,17 @@ class Game {
         this.player.respawn([0, 0, 0]);
         this.player.rotation = 0;
 
-        if (this.player2) {
+        // Create/remove Player 2 based on toggle
+        if (this.config.enableSecondPlayer) {
+            if (!this.player2) {
+                this.player2 = new Player2({
+                    position: [5, 0, 0]
+                });
+            }
             this.player2.respawn([5, 0, 0]);
+            this.player2.rotation = 0;
+        } else {
+            this.player2 = null;
         }
 
         // Reset managers with difficulty settings
@@ -439,7 +475,8 @@ class Game {
         this.ui.updateLevel(this.level);
         this.ui.updateViewMode(this.player.thirdPerson);
 
-        this.ui.showStatus(`${this.difficulty.toUpperCase()} MODE - GAME START!`, 2000);
+        const modeText = this.config.enableSecondPlayer ? '2 PLAYER ' : '';
+        this.ui.showStatus(`${modeText}${this.difficulty.toUpperCase()} MODE - GAME START!`, 2000);
     }
 
     pause() {
@@ -678,6 +715,9 @@ class Game {
         const projectionMatrix = mat4.create();
         const aspect = this.renderer.canvas.width / this.renderer.canvas.height;
         mat4.perspective(projectionMatrix, Utils.degToRad(60), aspect, 0.1, 500);
+
+        // Draw skybox
+        this.renderer.drawSkybox(viewMatrix, projectionMatrix);
 
         // Common uniforms
         const fogColor = this.alternateMode ? [0.4, 0.35, 0.25] : [0.1, 0.15, 0.1];
