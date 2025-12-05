@@ -158,15 +158,18 @@ class Player {
         const viewMatrix = mat4.create();
 
         if (this.thirdPerson) {
-            // Third person camera
+            // Third person camera - also apply turret pitch
             const forward = Utils.angleToVector(this.rotation);
 
             const eyeX = this.position[0] - forward[0] * this.cameraDistance;
             const eyeY = this.position[1] + this.cameraHeight;
             const eyeZ = this.position[2] - forward[2] * this.cameraDistance;
 
+            // Apply turret pitch to target
+            const pitchOffset = Math.sin(this.turretPitch) * 8;
+
             const targetX = this.position[0] + forward[0] * 5;
-            const targetY = this.position[1] + 1.5;
+            const targetY = this.position[1] + 1.5 + pitchOffset;
             const targetZ = this.position[2] + forward[2] * 5;
 
             mat4.lookAt(viewMatrix,
