@@ -71,17 +71,38 @@ class EnemyTank {
         }
 
         // Check obstacle collision
-        const obstacleHit = Collision.checkObstacleCollision(
-            this.position, this.collisionRadius, obstacles
-        );
+        // Check obstacle collision
+        for (const obstacle of obstacles) {
+            // Calculate obstacle bounds/radius
+            // For simplicity, treat obstacles as circles for collision response
+            // Most obstacles are about size 4-6, so radius ~3-4
+            const obstacleRadius = Math.max(obstacle.size[0], obstacle.size[2]) * 0.8;
 
-        if (obstacleHit) {
-            this.position[0] = oldPosition[0];
-            this.position[2] = oldPosition[2];
+            if (Collision.circleVsCircle(
+                this.position[0], this.position[2], this.collisionRadius,
+                obstacle.position[0], obstacle.position[2], obstacleRadius
+            )) {
+                // Calculate push vector
+                const dx = this.position[0] - obstacle.position[0];
+                const dz = this.position[2] - obstacle.position[2];
+                const dist = Math.sqrt(dx * dx + dz * dz);
 
-            // Turn away from obstacle
-            this.targetRotation = this.rotation + Math.PI / 2 + Math.random() * Math.PI;
-            this.moveTimer = 0;
+                if (dist > 0) {
+                    // Push out
+                    const overlap = (this.collisionRadius + obstacleRadius) - dist;
+                    const pushX = (dx / dist) * (overlap + 0.1);
+                    const pushZ = (dz / dist) * (overlap + 0.1);
+
+                    this.position[0] += pushX;
+                    this.position[2] += pushZ;
+                } else {
+                    this.position[0] += 1;
+                }
+
+                // Turn away
+                this.targetRotation = this.rotation + Math.PI / 2 + Math.random() * Math.PI;
+                this.moveTimer = 0;
+            }
         }
 
         // Check mountain collision (mountains are circular with baseSize=8 * scale)

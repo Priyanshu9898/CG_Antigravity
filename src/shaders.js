@@ -246,10 +246,10 @@ const Shaders = {
             vec3 dir = normalize(vPosition);
             
             // Gradient based on Y direction
-            // Dark blue at top, lighter near horizon, dark ground at bottom
-            vec3 topColor = vec3(0.0, 0.05, 0.2);
-            vec3 horizonColor = vec3(0.1, 0.2, 0.4);
-            vec3 bottomColor = vec3(0.05, 0.05, 0.1);
+            // Night sky (Deep Blue)
+            vec3 topColor = vec3(0.0, 0.05, 0.2);     // Very deep blue zenith
+            vec3 horizonColor = vec3(0.1, 0.2, 0.4);  // Dark blue horizon
+            vec3 bottomColor = vec3(0.05, 0.05, 0.1); // Dark ground
             
             vec3 color;
             if (dir.y > 0.0) {

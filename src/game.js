@@ -323,9 +323,9 @@ class Game {
             return;
         }
 
-        // Create straight-line projectile (per requirements)
+        // Create projectile
         this.projectileManager.fireFromEntity(player, {
-            type: 'normal',
+            type: this.config.useBallistics ? 'ballistic' : 'normal',
             speed: 60,
             color: [1, 0.9, 0.3]
         });
@@ -421,7 +421,7 @@ class Game {
                 direction[2] * speed
             ],
             color: [1, 0.3, 0.3],
-            type: 'normal'
+            type: this.config.useBallistics ? 'ballistic' : 'normal'
         });
 
         this.audio.playShot();
@@ -445,7 +445,9 @@ class Game {
         this.level = 1;
 
         // Reset player
-        this.player.respawn([0, 0, 0]);
+        // Reset player
+        const spawnPos = this.terrain.getRandomSpawnPosition(10, [], 20);
+        this.player.respawn(spawnPos);
         this.player.rotation = 0;
 
         // Create/remove Player 2 based on toggle
@@ -643,8 +645,11 @@ class Game {
                         } else {
                             // Respawn player
                             setTimeout(() => {
-                                target.respawn();
-                                this.ui.showStatus('TANK DESTROYED! RESPAWNING...', 2000);
+                                setTimeout(() => {
+                                    const spawnPos = this.terrain.getRandomSpawnPosition(10, [], 20);
+                                    target.respawn(spawnPos);
+                                    this.ui.showStatus('TANK DESTROYED! RESPAWNING...', 2000);
+                                }, 1000);
                             }, 1000);
                         }
                     }
@@ -705,7 +710,7 @@ class Game {
         // Get clear color based on mode
         const clearColor = this.alternateMode ?
             [0.15, 0.12, 0.08, 1.0] : // Desert tan
-            [0.02, 0.05, 0.02, 1.0];  // Night green
+            [0.1, 0.2, 0.4, 1.0];     // Night sky blue
 
         this.renderer.clear(clearColor);
         this.renderer.resize();
