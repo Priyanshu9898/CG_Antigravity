@@ -91,12 +91,13 @@ class UI {
         const hasAny = powerupManager.getActiveTypes().length > 0;
         this.powerupIndicators.classList.toggle('hidden', !hasAny);
 
-        // Update individual indicators
+        // Update individual indicators - only update the span text, keep images
         if (this.shieldIndicator) {
             const shieldTime = powerupManager.getRemainingTime(PowerUpType.SHIELD);
             this.shieldIndicator.classList.toggle('hidden', shieldTime <= 0);
             if (shieldTime > 0) {
-                this.shieldIndicator.textContent = `🛡️ SHIELD (${Math.ceil(shieldTime)}s)`;
+                const span = this.shieldIndicator.querySelector('span');
+                if (span) span.textContent = `SHIELD (${Math.ceil(shieldTime)}s)`;
             }
         }
 
@@ -104,7 +105,8 @@ class UI {
             const freezeTime = powerupManager.getRemainingTime(PowerUpType.FREEZE);
             this.freezeIndicator.classList.toggle('hidden', freezeTime <= 0);
             if (freezeTime > 0) {
-                this.freezeIndicator.textContent = `❄️ FREEZE (${Math.ceil(freezeTime)}s)`;
+                const span = this.freezeIndicator.querySelector('span');
+                if (span) span.textContent = `FREEZE (${Math.ceil(freezeTime)}s)`;
             }
         }
 
@@ -112,7 +114,8 @@ class UI {
             const xrayTime = powerupManager.getRemainingTime(PowerUpType.XRAY);
             this.xrayIndicator.classList.toggle('hidden', xrayTime <= 0);
             if (xrayTime > 0) {
-                this.xrayIndicator.textContent = `👁️ X-RAY (${Math.ceil(xrayTime)}s)`;
+                const span = this.xrayIndicator.querySelector('span');
+                if (span) span.textContent = `RADAR (${Math.ceil(xrayTime)}s)`;
             }
         }
     }

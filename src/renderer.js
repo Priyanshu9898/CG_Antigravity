@@ -34,12 +34,49 @@ class Renderer {
         this.programs.line = this.createProgram(Shaders.lineVertex, Shaders.lineFragment);
         this.programs.terrain = this.createProgram(Shaders.terrainVertex, Shaders.terrainFragment);
         this.programs.particle = this.createProgram(Shaders.particleVertex, Shaders.particleFragment);
+        this.programs.textured = this.createProgram(Shaders.texturedVertex, Shaders.texturedFragment);
+
+        // Load power-up textures
+        this.textures = {};
+        this.loadTexture('shield', 'assets/shield.png');
+        this.loadTexture('freeze', 'assets/freeze.png');
+        this.loadTexture('xray', 'assets/xray.png');
 
         // Create basic geometries
         this.createGeometries();
 
         // Set default viewport
         this.resize();
+    }
+
+    // Load texture from image file
+    loadTexture(name, url) {
+        const gl = this.gl;
+        const texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+
+        // Placeholder while loading
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+            new Uint8Array([255, 255, 255, 255]));
+
+        const image = new Image();
+        image.crossOrigin = "anonymous";
+        image.onload = () => {
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+            gl.generateMipmap(gl.TEXTURE_2D);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            console.log(`Texture loaded: ${name}`);
+        };
+        image.onerror = () => {
+            console.warn(`Failed to load texture: ${url}`);
+        };
+        image.src = url;
+
+        this.textures[name] = texture;
     }
 
     createProgram(vertexSource, fragmentSource) {
@@ -113,6 +150,12 @@ class Renderer {
 
         // Create pyramid geometry (for obstacles)
         this.geometries.pyramid = this.createPyramidGeometry();
+
+        // Create UFO geometry (flying saucer)
+        this.geometries.ufo = this.createUFOGeometry();
+
+        // Create sphere geometry (for power-ups)
+        this.geometries.sphere = this.createSphereGeometry();
     }
 
     createCubeGeometry() {
@@ -414,6 +457,144 @@ class Renderer {
         return this.createBufferedGeometry(positions, normals, indices);
     }
 
+    // Create UFO geometry - flying saucer shape (disc + dome)
+    createUFOGeometry() {
+        const positions = [];
+        const normals = [];
+        const indices = [];
+
+        const discRadius = 3.0;
+        const discHeight = 0.5;
+        const domeRadius = 1.5;
+        const domeHeight = 1.2;
+        const segments = 16;
+
+        let vertexIndex = 0;
+
+        // Bottom disc (flat disc shape)
+        // Center bottom
+        positions.push(0, -discHeight / 2, 0);
+        normals.push(0, -1, 0);
+        const bottomCenterIdx = vertexIndex++;
+
+        // Bottom ring
+        for (let i = 0; i < segments; i++) {
+            const angle = (i / segments) * Math.PI * 2;
+            const x = Math.cos(angle) * discRadius;
+            const z = Math.sin(angle) * discRadius;
+            positions.push(x, -discHeight / 2, z);
+            normals.push(0, -1, 0);
+        }
+
+        // Bottom disc triangles
+        for (let i = 0; i < segments; i++) {
+            indices.push(bottomCenterIdx, bottomCenterIdx + 1 + i, bottomCenterIdx + 1 + ((i + 1) % segments));
+        }
+        vertexIndex += segments;
+
+        // Top disc edge
+        const topEdgeStart = vertexIndex;
+        for (let i = 0; i < segments; i++) {
+            const angle = (i / segments) * Math.PI * 2;
+            const x = Math.cos(angle) * discRadius;
+            const z = Math.sin(angle) * discRadius;
+            positions.push(x, discHeight / 2, z);
+            const nx = Math.cos(angle);
+            const nz = Math.sin(angle);
+            normals.push(nx, 0.3, nz);
+        }
+        vertexIndex += segments;
+
+        // Disc side (connect bottom and top edge)
+        for (let i = 0; i < segments; i++) {
+            const next = (i + 1) % segments;
+            const b1 = bottomCenterIdx + 1 + i;
+            const b2 = bottomCenterIdx + 1 + next;
+            const t1 = topEdgeStart + i;
+            const t2 = topEdgeStart + next;
+            indices.push(b1, t1, b2);
+            indices.push(b2, t1, t2);
+        }
+
+        // Dome on top
+        const domeBaseStart = vertexIndex;
+        for (let i = 0; i < segments; i++) {
+            const angle = (i / segments) * Math.PI * 2;
+            const x = Math.cos(angle) * domeRadius;
+            const z = Math.sin(angle) * domeRadius;
+            positions.push(x, discHeight / 2, z);
+            normals.push(Math.cos(angle) * 0.5, 0.5, Math.sin(angle) * 0.5);
+        }
+        vertexIndex += segments;
+
+        // Dome peak
+        positions.push(0, discHeight / 2 + domeHeight, 0);
+        normals.push(0, 1, 0);
+        const domePeakIdx = vertexIndex++;
+
+        // Dome triangles
+        for (let i = 0; i < segments; i++) {
+            indices.push(domeBaseStart + i, domePeakIdx, domeBaseStart + ((i + 1) % segments));
+        }
+
+        // Connect dome base to disc top
+        for (let i = 0; i < segments; i++) {
+            const next = (i + 1) % segments;
+            indices.push(topEdgeStart + i, domeBaseStart + i, topEdgeStart + next);
+            indices.push(topEdgeStart + next, domeBaseStart + i, domeBaseStart + next);
+        }
+
+        return this.createBufferedGeometry(positions, normals, indices);
+    }
+
+    // Create sphere geometry for power-ups with texture coordinates
+    createSphereGeometry() {
+        const positions = [];
+        const normals = [];
+        const indices = [];
+        const texCoords = [];
+
+        const radius = 1.0;
+        const latSegments = 12;
+        const lonSegments = 16;
+
+        // Generate vertices with UV coordinates
+        for (let lat = 0; lat <= latSegments; lat++) {
+            const theta = (lat / latSegments) * Math.PI;
+            const sinTheta = Math.sin(theta);
+            const cosTheta = Math.cos(theta);
+            const v = lat / latSegments;
+
+            for (let lon = 0; lon <= lonSegments; lon++) {
+                const phi = (lon / lonSegments) * Math.PI * 2;
+                const sinPhi = Math.sin(phi);
+                const cosPhi = Math.cos(phi);
+                const u = lon / lonSegments;
+
+                const x = cosPhi * sinTheta;
+                const y = cosTheta;
+                const z = sinPhi * sinTheta;
+
+                positions.push(x * radius, y * radius, z * radius);
+                normals.push(x, y, z);
+                texCoords.push(u, v);
+            }
+        }
+
+        // Generate indices
+        for (let lat = 0; lat < latSegments; lat++) {
+            for (let lon = 0; lon < lonSegments; lon++) {
+                const first = lat * (lonSegments + 1) + lon;
+                const second = first + lonSegments + 1;
+
+                indices.push(first, second, first + 1);
+                indices.push(second, second + 1, first + 1);
+            }
+        }
+
+        return this.createBufferedGeometry(positions, normals, indices, texCoords);
+    }
+
     createBufferedGeometry(positions, normals, indices, texCoords = null) {
         const gl = this.gl;
 
@@ -510,6 +691,59 @@ class Renderer {
         mat4.invert(normalMatrix, modelMatrix);
         mat4.transpose(normalMatrix, normalMatrix);
         uniforms.uNormalMatrix = normalMatrix;
+
+        this.setUniforms(uniforms);
+
+        // Bind position buffer
+        if (program.attributes.aPosition !== undefined) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, geometry.positionBuffer);
+            gl.enableVertexAttribArray(program.attributes.aPosition);
+            gl.vertexAttribPointer(program.attributes.aPosition, 3, gl.FLOAT, false, 0, 0);
+        }
+
+        // Bind normal buffer
+        if (program.attributes.aNormal !== undefined) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, geometry.normalBuffer);
+            gl.enableVertexAttribArray(program.attributes.aNormal);
+            gl.vertexAttribPointer(program.attributes.aNormal, 3, gl.FLOAT, false, 0, 0);
+        }
+
+        // Bind texture coordinate buffer
+        if (program.attributes.aTexCoord !== undefined && geometry.texCoordBuffer) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, geometry.texCoordBuffer);
+            gl.enableVertexAttribArray(program.attributes.aTexCoord);
+            gl.vertexAttribPointer(program.attributes.aTexCoord, 2, gl.FLOAT, false, 0, 0);
+        }
+
+        // Draw
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, geometry.indexBuffer);
+        gl.drawElements(gl.TRIANGLES, geometry.vertexCount, gl.UNSIGNED_SHORT, 0);
+    }
+
+    // Draw textured geometry (for power-ups)
+    drawTexturedGeometry(geometry, modelMatrix, textureName, uniforms = {}) {
+        const gl = this.gl;
+
+        // Switch to textured program
+        this.useProgram(this.programs.textured);
+        const program = this.programs.textured;
+
+        // Set model matrix
+        uniforms.uModelMatrix = modelMatrix;
+
+        // Calculate normal matrix
+        const normalMatrix = mat4.create();
+        mat4.invert(normalMatrix, modelMatrix);
+        mat4.transpose(normalMatrix, normalMatrix);
+        uniforms.uNormalMatrix = normalMatrix;
+
+        // Set texture
+        const texture = this.textures[textureName];
+        if (texture) {
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.uniform1i(program.uniforms.uTexture, 0);
+        }
 
         this.setUniforms(uniforms);
 

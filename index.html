@@ -1,31 +1,34 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Battlezone - WebGL</title>
-    <meta name="description" content="A 3D tank battle game inspired by the classic Battlezone arcade game, built with WebGL">
+    <meta name="description"
+        content="A 3D tank battle game inspired by the classic Battlezone arcade game, built with WebGL">
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <!-- Main Game Container -->
     <div id="game-container">
         <!-- WebGL Canvas -->
         <canvas id="game-canvas"></canvas>
-        
+
         <!-- Radar Overlay -->
         <div id="radar-container">
             <canvas id="radar-canvas"></canvas>
             <div class="radar-overlay"></div>
         </div>
-        
+
         <!-- Crosshair -->
         <div id="crosshair">
             <div class="crosshair-h"></div>
             <div class="crosshair-v"></div>
             <div class="crosshair-center"></div>
         </div>
-        
+
         <!-- HUD -->
         <div id="hud">
             <div id="score-display">
@@ -44,30 +47,46 @@
                 <span id="view-label">1ST PERSON</span>
             </div>
         </div>
-        
+
         <!-- Status Messages -->
         <div id="status-message"></div>
-        
+
         <!-- Game Messages -->
         <div id="game-message" class="hidden">
             <h2 id="message-title">BATTLEZONE</h2>
-            <p id="message-text">Press ENTER to Start</p>
+            <p id="message-text">Select Difficulty</p>
+
+            <!-- Difficulty Selection -->
+            <div id="difficulty-select">
+                <button class="difficulty-btn" data-difficulty="easy">EASY</button>
+                <button class="difficulty-btn" data-difficulty="medium">MEDIUM</button>
+                <button class="difficulty-btn" data-difficulty="hard">HARD</button>
+            </div>
+
             <div id="controls-info">
                 <p><strong>Controls:</strong></p>
-                <p>↑/↓ - Move Forward/Backward</p>
-                <p>←/→ - Rotate Left/Right</p>
-                <p>SPACE - Fire</p>
-                <p>TAB - Toggle View</p>
-                <p>P - Pause</p>
-                <p>! - Alternate Mode</p>
+                <p>UP/DOWN - Move Forward/Backward</p>
+                <p>LEFT/RIGHT - Rotate Left/Right</p>
+                <p>W/S - Aim Turret Up/Down (for UFO)</p>
+                <p>SPACE - Fire | E - Guided Missile</p>
+                <p>TAB - Toggle View | P - Pause</p>
             </div>
         </div>
-        
+
         <!-- Power-up Indicators -->
         <div id="powerup-indicators" class="hidden">
-            <div id="shield-indicator" class="powerup-icon hidden">🛡️ SHIELD</div>
-            <div id="freeze-indicator" class="powerup-icon hidden">❄️ FREEZE</div>
-            <div id="xray-indicator" class="powerup-icon hidden">👁️ X-RAY</div>
+            <div id="shield-indicator" class="powerup-icon hidden">
+                <img src="assets/shield.png" alt="Shield" class="powerup-img">
+                <span>SHIELD</span>
+            </div>
+            <div id="freeze-indicator" class="powerup-icon hidden">
+                <img src="assets/freeze.png" alt="Freeze" class="powerup-img">
+                <span>FREEZE</span>
+            </div>
+            <div id="xray-indicator" class="powerup-icon hidden">
+                <img src="assets/xray.png" alt="Radar" class="powerup-img">
+                <span>RADAR</span>
+            </div>
         </div>
     </div>
 
@@ -88,4 +107,8 @@
     <script src="src/game.js"></script>
     <script src="src/main.js"></script>
 </body>
+
 </html>
+
+
+

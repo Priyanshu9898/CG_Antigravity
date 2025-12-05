@@ -31,12 +31,38 @@ class Game {
         this.lives = 10;
         this.level = 1;
         this.alternateMode = false;
+        this.difficulty = 'medium'; // easy, medium, hard
 
         // Timing
         this.lastTime = 0;
         this.deltaTime = 0;
         this.radarBeepTimer = 0;
         this.radarBeepInterval = 2;
+
+        // Difficulty presets
+        this.difficultySettings = {
+            easy: {
+                enemyMaxSpeed: 4,           // Slightly faster (was 3)
+                enemyShootCooldown: 4,      // More aggressive (was 7)
+                enemyPlayerBias: 0.4,       // More aggressive (was 0.2)
+                startingLives: 10,
+                ufoSpawnLevel: 1  // UFO spawns from level 1
+            },
+            medium: {
+                enemyMaxSpeed: 5,
+                enemyShootCooldown: 5,
+                enemyPlayerBias: 0.4,
+                startingLives: 5,
+                ufoSpawnLevel: 1  // UFO spawns from level 1
+            },
+            hard: {
+                enemyMaxSpeed: 8,
+                enemyShootCooldown: 3,
+                enemyPlayerBias: 0.7,
+                startingLives: 3,
+                ufoSpawnLevel: 1  // UFO spawns from level 1
+            }
+        };
 
         // Configuration
         this.config = {
@@ -116,6 +142,17 @@ class Game {
             this.audio.init();
             this.audio.resume();
         }, { once: true });
+
+        // Difficulty button handlers
+        const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+        difficultyButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.audio.init();
+                this.audio.resume();
+                this.difficulty = e.target.dataset.difficulty;
+                this.startGame();
+            });
+        });
     }
 
     handleKeyDown(e) {
@@ -165,16 +202,16 @@ class Game {
                     this.player.input.right = true;
                     break;
                 case 'KeyW':
-                    if (this.config.use3DGameplay) {
-                        this.player.input.turretUp = true;
-                    } else if (this.player2) {
+                    // Always enable turret pitch for UFO targeting
+                    this.player.input.turretUp = true;
+                    if (this.player2) {
                         this.player2.input.forward = true;
                     }
                     break;
                 case 'KeyS':
-                    if (this.config.use3DGameplay) {
-                        this.player.input.turretDown = true;
-                    } else if (this.player2) {
+                    // Always enable turret pitch for UFO targeting
+                    this.player.input.turretDown = true;
+                    if (this.player2) {
                         this.player2.input.backward = true;
                     }
                     break;
@@ -226,16 +263,14 @@ class Game {
                     this.player.input.right = false;
                     break;
                 case 'KeyW':
-                    if (this.config.use3DGameplay) {
-                        this.player.input.turretUp = false;
-                    } else if (this.player2) {
+                    this.player.input.turretUp = false;
+                    if (this.player2) {
                         this.player2.input.forward = false;
                     }
                     break;
                 case 'KeyS':
-                    if (this.config.use3DGameplay) {
-                        this.player.input.turretDown = false;
-                    } else if (this.player2) {
+                    this.player.input.turretDown = false;
+                    if (this.player2) {
                         this.player2.input.backward = false;
                     }
                     break;
@@ -374,9 +409,12 @@ class Game {
         this.audio.init();
         this.audio.resume();
 
+        // Get difficulty settings
+        const settings = this.difficultySettings[this.difficulty] || this.difficultySettings.medium;
+
         this.state = GameState.PLAYING;
         this.score = 0;
-        this.lives = 10;
+        this.lives = settings.startingLives;
         this.level = 1;
 
         // Reset player
@@ -387,7 +425,8 @@ class Game {
             this.player2.respawn([5, 0, 0]);
         }
 
-        // Reset managers
+        // Reset managers with difficulty settings
+        this.enemyManager.setDifficulty(settings);
         this.enemyManager.reset(this.terrain, this.player, this.level, 3);
         this.projectileManager.clear();
         this.particleSystem.clear();
@@ -400,7 +439,7 @@ class Game {
         this.ui.updateLevel(this.level);
         this.ui.updateViewMode(this.player.thirdPerson);
 
-        this.ui.showStatus('GAME START!', 2000);
+        this.ui.showStatus(`${this.difficulty.toUpperCase()} MODE - GAME START!`, 2000);
     }
 
     pause() {
@@ -520,6 +559,16 @@ class Game {
             const shooters = this.enemyManager.getEnemiesNeedingToShoot();
             for (const enemy of shooters) {
                 this.enemyShoot(enemy, this.player);
+            }
+
+            // Spawn UFO based on level and difficulty
+            const ufoSpawnLevel = this.enemyManager.difficultySettings?.ufoSpawnLevel || 1;
+            if (this.level >= ufoSpawnLevel && (!this.enemyManager.ufo || !this.enemyManager.ufo.alive)) {
+                // Random chance to spawn UFO each frame (~1 every 2 seconds at 60fps)
+                if (Math.random() < 0.01) {
+                    this.enemyManager.spawnUFO(this.terrain);
+                    this.ui.showStatus('WARNING: UFO DETECTED!', 3000);
+                }
             }
         }
 
@@ -721,11 +770,11 @@ class Game {
             );
         }
 
-        // Render UFO
+        // Render UFO (flying saucer shape)
         if (this.enemyManager.ufo && this.enemyManager.ufo.alive) {
             const ufo = this.enemyManager.ufo;
             this.renderer.drawGeometry(
-                this.renderer.geometries.cube, // Simple shape for UFO
+                this.renderer.geometries.ufo, // Flying saucer geometry
                 ufo.getModelMatrix(),
                 { uColor: ufo.color }
             );
@@ -760,14 +809,27 @@ class Game {
             );
         }
 
-        // Render power-ups
+        // Render power-ups (textured spheres with images)
         for (const powerup of this.powerupManager.powerups) {
             if (powerup.collected) continue;
 
-            this.renderer.drawGeometry(
-                this.renderer.geometries.cube,
+            // Get texture name based on power-up type
+            let textureName = 'shield';
+            if (powerup.type === PowerUpType.FREEZE) textureName = 'freeze';
+            else if (powerup.type === PowerUpType.XRAY) textureName = 'xray';
+
+            this.renderer.drawTexturedGeometry(
+                this.renderer.geometries.sphere,
                 powerup.getModelMatrix(),
-                { uColor: powerup.color }
+                textureName,
+                {
+                    uColor: powerup.color,
+                    uLightDirection: lightDir,
+                    uViewMatrix: viewMatrix,
+                    uProjectionMatrix: projectionMatrix,
+                    uTime: performance.now() / 1000,
+                    uGlow: 0.3
+                }
             );
         }
 

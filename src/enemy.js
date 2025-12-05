@@ -265,16 +265,16 @@ class UFO {
 
         this.collisionRadius = 3.0;
         this.height = 2.0;
-        this.speed = config.speed || 12;
+        this.speed = config.speed || 4;  // SLOWED from 12 to 4
 
         this.alive = true;
-        this.shootTimer = Utils.random(3, 6);
-        this.shootCooldown = 4;
+        this.shootTimer = Utils.random(5, 8);  // Slower shooting
+        this.shootCooldown = 6;  // Longer cooldown
 
-        this.color = [0.6, 0.6, 0.8]; // Metallic grey
+        this.color = [0.7, 0.7, 0.9]; // Lighter metallic color
         this.points = 500;
 
-        // Movement pattern
+        // Movement pattern - slower
         this.moveAngle = Math.random() * Math.PI * 2;
         this.bobPhase = Math.random() * Math.PI * 2;
     }
@@ -285,12 +285,12 @@ class UFO {
         // Update shooting
         this.shootTimer -= deltaTime;
 
-        // Rotate
-        this.rotation += deltaTime * 0.5;
+        // Rotate slowly
+        this.rotation += deltaTime * 0.3;
 
-        // Move in a pattern
-        this.moveAngle += deltaTime * 0.3;
-        this.bobPhase += deltaTime * 2;
+        // Move in a slower pattern
+        this.moveAngle += deltaTime * 0.1;  // SLOWED from 0.3
+        this.bobPhase += deltaTime * 1.5;   // Slower bob
 
         const moveX = Math.cos(this.moveAngle);
         const moveZ = Math.sin(this.moveAngle);
@@ -298,8 +298,8 @@ class UFO {
         this.position[0] += moveX * this.speed * deltaTime;
         this.position[2] += moveZ * this.speed * deltaTime;
 
-        // Bob up and down
-        this.position[1] = 15 + Math.sin(this.bobPhase) * 3;
+        // Bob up and down gently
+        this.position[1] = 12 + Math.sin(this.bobPhase) * 2;  // Lower and gentler
 
         // Keep in bounds
         terrain.clampToBounds(this.position, 20);
@@ -345,6 +345,24 @@ class EnemyManager {
         this.maxEnemies = 5;
         this.spawnTimer = 0;
         this.spawnInterval = 5;
+
+        // Difficulty settings (can be overridden)
+        this.difficultySettings = {
+            enemyMaxSpeed: 5,
+            enemyShootCooldown: 5,
+            enemyPlayerBias: 0.4,
+            ufoSpawnLevel: 3
+        };
+    }
+
+    // Set difficulty from game settings
+    setDifficulty(settings) {
+        this.difficultySettings = {
+            enemyMaxSpeed: settings.enemyMaxSpeed || 5,
+            enemyShootCooldown: settings.enemyShootCooldown || 5,
+            enemyPlayerBias: settings.enemyPlayerBias || 0.4,
+            ufoSpawnLevel: settings.ufoSpawnLevel || 3
+        };
     }
 
     spawnEnemy(terrain, player, level = 1) {
@@ -363,12 +381,13 @@ class EnemyManager {
 
         const position = terrain.getEdgeSpawnPosition(avoidPositions, viewDir);
 
-        // Increase difficulty with level (but slower scaling)
+        // Use difficulty settings with level scaling
+        const ds = this.difficultySettings;
         const config = {
             position: position,
-            maxSpeed: 5 + level * 0.8,  // Slower increase (was 8 + level*1.5)
-            shootCooldown: Math.max(3, 5 - level * 0.3), // Minimum 3s cooldown
-            playerBias: Math.min(0.7, 0.4 + level * 0.08)  // Less aggressive
+            maxSpeed: ds.enemyMaxSpeed + level * 0.5,
+            shootCooldown: Math.max(2, ds.enemyShootCooldown - level * 0.2),
+            playerBias: Math.min(0.85, ds.enemyPlayerBias + level * 0.05)
         };
 
         const enemy = new EnemyTank(config);

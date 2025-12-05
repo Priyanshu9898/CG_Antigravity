@@ -6,6 +6,7 @@ class AudioManager {
         this.enabled = true;
         this.masterVolume = 0.5;
         this.initialized = false;
+        this.explosionBuffer = null; // Pre-loaded explosion sound
     }
 
     init() {
@@ -17,9 +18,24 @@ class AudioManager {
             this.masterGain.gain.value = this.masterVolume;
             this.masterGain.connect(this.context.destination);
             this.initialized = true;
+
+            // Load explosion.wav
+            this.loadExplosionSound();
         } catch (e) {
             console.warn('Web Audio API not supported:', e);
             this.enabled = false;
+        }
+    }
+
+    // Load explosion.wav from assets folder
+    async loadExplosionSound() {
+        try {
+            const response = await fetch('assets/explosion.wav');
+            const arrayBuffer = await response.arrayBuffer();
+            this.explosionBuffer = await this.context.decodeAudioData(arrayBuffer);
+            console.log('Explosion sound loaded successfully');
+        } catch (e) {
+            console.warn('Could not load explosion.wav, using synthesized sound:', e);
         }
     }
 
@@ -128,10 +144,30 @@ class AudioManager {
         osc2.stop(now + 0.1);
     }
 
-    // Explosion sound - loud and dramatic
+    // Explosion sound - plays loaded WAV or falls back to synthesized
     playExplosion() {
         if (!this.enabled || !this.context) return;
 
+        // Try to play the loaded explosion.wav first
+        if (this.explosionBuffer) {
+            const source = this.context.createBufferSource();
+            source.buffer = this.explosionBuffer;
+
+            const gain = this.context.createGain();
+            gain.gain.value = 0.8; // Adjust volume as needed
+
+            source.connect(gain);
+            gain.connect(this.masterGain);
+            source.start();
+            return;
+        }
+
+        // Fallback to synthesized explosion sound
+        this.playSynthesizedExplosion();
+    }
+
+    // Synthesized explosion (fallback)
+    playSynthesizedExplosion() {
         const now = this.context.currentTime;
         const duration = 0.8;
 

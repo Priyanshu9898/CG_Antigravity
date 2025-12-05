@@ -242,6 +242,62 @@ const Shaders = {
             }
             gl_FragColor = vec4(uColor, 1.0);
         }
+    `,
+
+    // Textured shader for power-ups
+    texturedVertex: `
+        attribute vec3 aPosition;
+        attribute vec3 aNormal;
+        attribute vec2 aTexCoord;
+        
+        uniform mat4 uModelMatrix;
+        uniform mat4 uViewMatrix;
+        uniform mat4 uProjectionMatrix;
+        uniform mat4 uNormalMatrix;
+        uniform float uTime;
+        
+        varying vec3 vNormal;
+        varying vec3 vPosition;
+        varying vec2 vTexCoord;
+        
+        void main() {
+            vec4 worldPosition = uModelMatrix * vec4(aPosition, 1.0);
+            vPosition = (uViewMatrix * worldPosition).xyz;
+            vNormal = (uNormalMatrix * vec4(aNormal, 0.0)).xyz;
+            vTexCoord = aTexCoord;
+            gl_Position = uProjectionMatrix * uViewMatrix * worldPosition;
+        }
+    `,
+
+    texturedFragment: `
+        precision mediump float;
+        
+        uniform sampler2D uTexture;
+        uniform vec3 uColor;
+        uniform vec3 uLightDirection;
+        uniform float uTime;
+        uniform float uGlow;
+        
+        varying vec3 vNormal;
+        varying vec3 vPosition;
+        varying vec2 vTexCoord;
+        
+        void main() {
+            vec3 normal = normalize(vNormal);
+            vec3 lightDir = normalize(uLightDirection);
+            
+            // Sample texture
+            vec4 texColor = texture2D(uTexture, vTexCoord);
+            
+            // Diffuse lighting
+            float diff = max(dot(normal, lightDir), 0.0) * 0.5 + 0.5;
+            
+            // Mix texture with base color and add glow
+            vec3 finalColor = texColor.rgb * diff;
+            finalColor += uColor * uGlow * (0.5 + 0.5 * sin(uTime * 3.0));
+            
+            gl_FragColor = vec4(finalColor, texColor.a);
+        }
     `
 };
 

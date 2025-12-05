@@ -333,3 +333,86 @@ body {
     color: #fa0;
     text-shadow: 0 0 15px #f90;
 }
+/* Difficulty Selection */
+#difficulty-select {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin: 25px 0;
+}
+
+.difficulty-btn {
+    background: rgba(0, 40, 0, 0.9);
+    border: 2px solid #00ff00;
+    color: #00ff00;
+    padding: 12px 30px;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-shadow: 0 0 5px #00ff00;
+}
+
+.difficulty-btn:hover {
+    background: #00ff00;
+    color: #000;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+    transform: scale(1.05);
+}
+
+.difficulty-btn[data-difficulty='easy'] {
+    border-color: #00ff00;
+}
+
+.difficulty-btn[data-difficulty='medium'] {
+    border-color: #ffff00;
+    color: #ffff00;
+    text-shadow: 0 0 5px #ffff00;
+}
+
+.difficulty-btn[data-difficulty='medium']:hover {
+    background: #ffff00;
+    color: #000;
+    box-shadow: 0 0 20px rgba(255, 255, 0, 0.5);
+}
+
+.difficulty-btn[data-difficulty='hard'] {
+    border-color: #ff3333;
+    color: #ff3333;
+    text-shadow: 0 0 5px #ff3333;
+}
+
+.difficulty-btn[data-difficulty='hard']:hover {
+    background: #ff3333;
+    color: #000;
+    box-shadow: 0 0 20px rgba(255, 50, 50, 0.5);
+}
+
+/* Power-up Image Styling */
+.powerup-img {
+    width: 24px;
+    height: 24px;
+    vertical-align: middle;
+    margin-right: 8px;
+    filter: drop-shadow(0 0 5px currentColor);
+}
+
+.powerup-icon {
+    display: flex;
+    align-items: center;
+}
+
+#shield-indicator {
+    color: #00aaff;
+    border-color: #00aaff;
+}
+
+#freeze-indicator {
+    color: #00ffff;
+    border-color: #00ffff;
+}
+
+#xray-indicator {
+    color: #aa00ff;
+    border-color: #aa00ff;
+}

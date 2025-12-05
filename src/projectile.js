@@ -181,11 +181,17 @@ class ProjectileManager {
                 (dir[2] / len) * speed
             ];
         } else {
-            // Fire straight ahead
+            // Fire in aim direction (uses turret pitch if available)
+            let direction;
+            if (entity.getShootDirection) {
+                direction = entity.getShootDirection();
+            } else {
+                direction = [forward[0], 0, forward[2]];
+            }
             velocity = [
-                forward[0] * speed,
-                0,
-                forward[2] * speed
+                direction[0] * speed,
+                direction[1] * speed,
+                direction[2] * speed
             ];
         }
 
