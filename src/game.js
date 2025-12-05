@@ -857,6 +857,7 @@ class Game {
             let textureName = 'shield';
             if (powerup.type === PowerUpType.FREEZE) textureName = 'freeze';
             else if (powerup.type === PowerUpType.XRAY) textureName = 'xray';
+            else if (powerup.type === PowerUpType.SPEED) textureName = 'speed';
 
             this.renderer.drawTexturedGeometry(
                 this.renderer.geometries.sphere,

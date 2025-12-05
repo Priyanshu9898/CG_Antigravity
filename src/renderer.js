@@ -46,6 +46,7 @@ class Renderer {
         this.loadTexture('shield', 'assets/shield.png');
         this.loadTexture('freeze', 'assets/freeze.png');
         this.loadTexture('xray', 'assets/xray.png');
+        this.loadTexture('speed', 'assets/speed.png');
 
         // Create basic geometries
         this.createGeometries();

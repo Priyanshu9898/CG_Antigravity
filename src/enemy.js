@@ -92,8 +92,24 @@ class EnemyTank {
                 this.position[0], this.position[2], this.collisionRadius,
                 mountain.position[0], mountain.position[2], mountainRadius
             )) {
-                this.position[0] = oldPosition[0];
-                this.position[2] = oldPosition[2];
+                // Calculate push vector
+                const dx = this.position[0] - mountain.position[0];
+                const dz = this.position[2] - mountain.position[2];
+                const dist = Math.sqrt(dx * dx + dz * dz);
+
+                if (dist > 0) {
+                    // Push out
+                    const overlap = (this.collisionRadius + mountainRadius) - dist;
+                    const pushX = (dx / dist) * (overlap + 0.1);
+                    const pushZ = (dz / dist) * (overlap + 0.1);
+
+                    this.position[0] += pushX;
+                    this.position[2] += pushZ;
+                } else {
+                    // Exact center overlap (rare), push random
+                    this.position[0] += 1;
+                }
+
                 this.targetRotation = this.rotation + Math.PI / 2 + Math.random() * Math.PI;
                 this.moveTimer = 0;
                 break;
